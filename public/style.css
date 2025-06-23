@@ -1,0 +1,94 @@
+:root
+{
+    --ljubicasta: #7f4994;
+    --svetloLjubicasta: #cbacd8;
+    --srednjaLjubicasta: #ba70da; 
+    --belaText: #ece9e9;
+    --sivaText: #7a7a7a; 
+}
+
+body
+{
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    background:linear-gradient(
+        45deg,
+        #7f4994 50%,
+        #cbacd8 50%
+    );
+    height: 100vh;
+    padding: 5% 33%;
+}
+
+.box
+{
+
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border-radius: 20px;
+    padding: 5%;
+
+}
+#title
+{
+    background-color: var(--srednjaLjubicasta);
+    color: var(--belaText);
+    display: flex;
+    justify-content: center;
+    border-radius: 20px;
+    text-align: center;
+    margin-bottom: 2%;
+}
+
+input[type="text"]
+{
+    display: flex;
+    width: 80%;
+    border: 0;
+    align-items: center;
+    text-align: center;
+    outline: none;
+}
+
+
+form.formClass
+{
+    display: flex;
+    padding-top: 5% ;
+}
+
+
+form.formClass button
+{
+    background-color: var(--srednjaLjubicasta);
+    border: none;
+    border-radius: 50%;
+    padding:3% 5%;
+    color: white;
+    font-size: 1.2em;
+    cursor: pointer;
+
+}
+
+.item
+{
+    background-color: white;
+    border-bottom:1px solid var(--srednjaLjubicasta);
+    display: flex;
+    align-items: center;
+    color: var(--sivaText);
+}
+
+input[type="checkbox"]
+{
+    margin-right: 5%;
+    cursor: pointer;
+}
+
+
+input:checked+p
+{
+    text-decoration-line: line-through;
+    text-decoration-color: var(--srednjaLjubicasta);
+    text-decoration-thickness: 2px;
+}
