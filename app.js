@@ -1,20 +1,58 @@
-const bodyParser = require('body-parser')
-const express = require('express')
+const bodyParser = require('body-parser');
+const express = require('express');
+const mongoose = require('mongoose');
 
-const app = express()
-const port = 2500
+const app = express();
+const port = 2500;
 
 app.set("view engine","ejs");
 
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.static("public"));
 
-let items = ["Opiči wowa malo", "Idi na faks", "Spremi se za šetnju"];
-let workItems = [];
+// MONGOOSE
 
+const connString = mongoose.connect("mongodb://localhost:27017/todolistDB");
 
-app.get('/', function(req, res) 
+// schema for items
+const itemSchema = mongoose.Schema(
+    {
+        name:
+        {
+            required: true,
+            type: String
+        }
+    }
+)
+
+// model for items
+const Items = mongoose.model("item",itemSchema);
+
+const work = new Items(
+    {
+        name: "Go to work!"
+    }
+);
+
+const work2 = new Items(
+    {
+        name: "Go to work again!"
+    }
+);
+
+const work3 = new Items(
+    {
+        name: "Go to work one more time!"
+    }
+);
+
+const defaultItems = [work,work2,work3];
+/* 
+ */
+
+app.get('/', async function(req, res) 
 {
+
 
     let currentDate = new Date();
     let options =
@@ -26,40 +64,71 @@ app.get('/', function(req, res)
 
     let day = currentDate.toLocaleDateString("sr-Latn-RS", options).toUpperCase();
 
-    res.render("index",{listTitle: day, addItem:items});
+
+    try
+    {
+
+        const dBitems = await Items.find({});
+
+        if(dBitems.length === 0)
+        {
+            Items.insertMany(defaultItems);
+            res.redirect("/");
+        }
+        else
+        {
+         res.render("index",{listTitle: day, addItem:dBitems});
+        }
+    }
+    catch(err)
+    {
+        console.log(err)
+    }
 });
 
-app.get("/work", function(req,res)
+
+app.post("/", async function(req,res)
 {
-    res.render("index",{listTitle: "Work List", addItem:workItems});
-});
-
-app.get("/about", function(req,res)
-{
-    res.render("about");
-}
-
-);
-
-
-
-app.post("/", function(req,res)
-{
-    let workSpace = req.body.list;
 
     let itemForList = req.body.newItem;
-    if(workSpace === "Work")
+
+    try
     {
-        workItems.push(itemForList);
-        res.redirect("/work");
+        const newItem = new Items({
+            name: itemForList
+        })
+        newItem.save();
     }
-    else
+    catch(err)
     {
-        items.push(itemForList);
+        console.log(err);
+    }
+    finally
+    {
+                res.redirect("/");
+    }
+});
+
+app.post("/delete", async function(req,res)
+{
+    const checkedItemDeletion = req.body.isChecked;
+
+    try
+    {
+        await Items.findByIdAndDelete(checkedItemDeletion);
+        console.log("Deleted an item with id: ",checkedItemDeletion);
         res.redirect("/");
     }
+    catch(err)
+    {
+        console.log(err);
+    }
+    
+})
 
-});
+
+
+
 
 app.listen(port, function(req,res)
 {

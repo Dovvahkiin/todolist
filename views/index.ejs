@@ -6,14 +6,17 @@
 
 <div class="box" id="tabs">
 
-    <% for(let i=0; i<addItem.length; i++){ %>
+    <% addItem.forEach(function(newItemAdd){ %>
 
-        <div class="item">
-            <input type="checkbox">
-            <p><%= addItem[i] %></p>
+        <form action="/delete" method="post">
+            <div class="item">
+            <input type="checkbox" name="isChecked" value= "<%=newItemAdd._id %>" onchange="this.form.submit()">
+            <p><%= newItemAdd.name %></p>
         </div>
+        </form>
 
-    <% } %>
+    <% }) %>
+
 
     <form action="/" method="post" class=" formClass">
     <input type="text" name="newItem" placeholder="New Item" autocomplete="off">

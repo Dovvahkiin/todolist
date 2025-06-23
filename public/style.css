@@ -92,3 +92,8 @@ input:checked+p
     text-decoration-color: var(--srednjaLjubicasta);
     text-decoration-thickness: 2px;
 }
+
+footer>p
+{
+    padding-bottom: 10%;
+}
