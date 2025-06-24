@@ -10,9 +10,10 @@
 
         <form action="/delete" method="post">
             <div class="item">
-            <input type="checkbox" name="isChecked" value= "<%=newItemAdd._id %>" onchange="this.form.submit()">
+            <input type="checkbox" name="isChecked" value= "<%=newItemAdd._id %>" onchange="this.form.submit()"></input>
             <p><%= newItemAdd.name %></p>
         </div>
+        <input type="hidden" name="listNameChecker" value="<%= listTitle%>"></input>
         </form>
 
     <% }) %>

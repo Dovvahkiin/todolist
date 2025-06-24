@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const mongoose = require('mongoose');
+const _ = require("lodash");
 
 const app = express();
 const port = 2500;
@@ -125,12 +126,26 @@ app.post("/", async function(req,res)
 app.post("/delete", async function(req,res)
 {
     const checkedItemDeletion = req.body.isChecked;
-
+    const listNameChecker = req.body.listNameChecker;
+    
     try
+    {
+    if(listNameChecker === day)
     {
         await Items.findByIdAndDelete(checkedItemDeletion);
         console.log("Deleted an item with id: ",checkedItemDeletion);
         res.redirect("/");
+    }
+    else
+    {
+       await List.findOneAndUpdate({name: listNameChecker},{$pull:{items:{_id:checkedItemDeletion}}});
+        // findOneAndUpdate({whatDoWeWantToUpdate},{HowAreWeGonnaUpdateIt})
+        // in second condition, we used $pull operator and we specified something that we want to pull from which is an items array
+        // then we provided query for matching the item, we used id for match so _id of array have to be the same with item that we selected in our app (checkedItemDeletion).
+        // The $pull oeprator removes an existing area with matched condition
+        res.redirect("/"+listNameChecker);
+    }
+
     }
     catch(err)
     {
@@ -142,7 +157,8 @@ app.post("/delete", async function(req,res)
 
 app.get("/:parameter", async function(req,res)
 {
-    const paramName = req.params.parameter;
+    const paramName = _.capitalize(req.params.parameter); // using lodash we fixed routing, so whatever spelling we type for example HOMe, it will return Home capitalized.
+    // because later paramName is used as listTitle and listTitle is used for rendering pages.
 
     try
     {
