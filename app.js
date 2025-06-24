@@ -47,22 +47,22 @@ const work3 = new Items(
 );
 
 const defaultItems = [work,work2,work3];
+
+
+const listSchema = 
+{
+    name: String,
+    items: [itemSchema]
+}
+
+const List = mongoose.model("list",listSchema);
 /* 
  */
 
+let day = "TODAY";
+
 app.get('/', async function(req, res) 
 {
-
-
-    let currentDate = new Date();
-    let options =
-    {
-        weekday: "long",
-        day: "numeric",
-        month: "long"
-    };
-
-    let day = currentDate.toLocaleDateString("sr-Latn-RS", options).toUpperCase();
 
 
     try
@@ -91,13 +91,26 @@ app.post("/", async function(req,res)
 {
 
     let itemForList = req.body.newItem;
+    const itemSubmit = req.body.list; // parameter
 
-    try
-    {
         const newItem = new Items({
             name: itemForList
         })
-        newItem.save();
+    try
+    {
+        if(itemSubmit === day)
+        {
+        await newItem.save();
+        res.redirect("/");
+        }
+        else
+        {
+            const tester = await List.findOne({name:itemSubmit}) //tester var becomes list object from database where the name is itemSubmit value which button name which value is title(and which xd, is name of the list)
+            tester.items.push(newItem); // pushes items in the list from above (with newItem which is in ejs input for new items)
+            await tester.save();
+            res.redirect("/"+ itemSubmit);
+        }
+
     }
     catch(err)
     {
@@ -127,7 +140,39 @@ app.post("/delete", async function(req,res)
 })
 
 
+app.get("/:parameter", async function(req,res)
+{
+    const paramName = req.params.parameter;
 
+    try
+    {
+        const test = await List.findOne({name:paramName});
+        if(!test)
+        {
+            console.log("WTF ARE YOU LOOKING FOR");
+        const list = new List({
+        name: paramName,
+        items: defaultItems
+          })
+          await list.save();
+    
+        res.render("index", { listTitle: paramName, addItem: list.items });
+
+        }
+        else
+        {
+            console.log("HI THERE WE ARE");
+            res.render("index", { listTitle: paramName, addItem: test.items });
+
+        }
+    }
+    catch(err)
+    {
+        console.log(err);
+    }
+        
+
+})
 
 
 app.listen(port, function(req,res)
