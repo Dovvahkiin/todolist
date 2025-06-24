@@ -13,7 +13,7 @@ app.use(express.static("public"));
 
 // MONGOOSE
 
-const connString = mongoose.connect(`mongodb+srv://admin-bogabet:same1700@cluster0.tdjwbiq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0/todolistDB`);
+const connString = mongoose.connect(`yourConnectionString/todolistDB`);
 
 // schema for items
 const itemSchema = mongoose.Schema(
