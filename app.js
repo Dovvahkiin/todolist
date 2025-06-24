@@ -13,7 +13,7 @@ app.use(express.static("public"));
 
 // MONGOOSE
 
-const connString = mongoose.connect("mongodb://localhost:27017/todolistDB");
+const connString = mongoose.connect(`mongodb+srv://admin-bogabet:same1700@cluster0.tdjwbiq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0/todolistDB`);
 
 // schema for items
 const itemSchema = mongoose.Schema(
@@ -29,27 +29,6 @@ const itemSchema = mongoose.Schema(
 // model for items
 const Items = mongoose.model("item",itemSchema);
 
-const work = new Items(
-    {
-        name: "Go to work!"
-    }
-);
-
-const work2 = new Items(
-    {
-        name: "Go to work again!"
-    }
-);
-
-const work3 = new Items(
-    {
-        name: "Go to work one more time!"
-    }
-);
-
-const defaultItems = [work,work2,work3];
-
-
 const listSchema = 
 {
     name: String,
@@ -57,21 +36,31 @@ const listSchema =
 }
 
 const List = mongoose.model("list",listSchema);
-/* 
- */
 
-let day = "TODAY";
+//making default items for new parameters
+const work = new Items({
+        name: "Welcome to my ToDoList!"
+    }
+);
+const work2 = new Items({
+        name: "Type down what you have to do and press +"
+    }
+);
+const work3 = new Items({
+        name: "<-- Click here and remove a item from the list"
+    }
+);
+
+const defaultItems = [work,work2,work3];
+
+let day = "TODAY"; // basic title
 
 app.get('/', async function(req, res) 
 {
-
-
     try
     {
-
-        const dBitems = await Items.find({});
-
-        if(dBitems.length === 0)
+        const dBitems = await Items.find({}); // getting items and storing into constant
+        if(dBitems.length === 0) 
         {
             Items.insertMany(defaultItems);
             res.redirect("/");
@@ -88,21 +77,21 @@ app.get('/', async function(req, res)
 });
 
 
-app.post("/", async function(req,res)
+app.post("/", async function(req,res) // form for adding new items into our toDoList
 {
 
-    let itemForList = req.body.newItem;
-    const itemSubmit = req.body.list; // parameter
-
-        const newItem = new Items({
+    let itemForList = req.body.newItem; // input field
+    const itemSubmit = req.body.list; // submit button which has value of listTitle 
+    const newItem = new Items({
             name: itemForList
         })
+
     try
     {
         if(itemSubmit === day)
         {
-        await newItem.save();
-        res.redirect("/");
+             await newItem.save(); //saving item in our default (home) todoList
+             res.redirect("/");
         }
         else
         {
@@ -111,7 +100,6 @@ app.post("/", async function(req,res)
             await tester.save();
             res.redirect("/"+ itemSubmit);
         }
-
     }
     catch(err)
     {
@@ -119,41 +107,42 @@ app.post("/", async function(req,res)
     }
     finally
     {
-                res.redirect("/");
+         res.redirect("/");
     }
 });
 
+
 app.post("/delete", async function(req,res)
 {
-    const checkedItemDeletion = req.body.isChecked;
-    const listNameChecker = req.body.listNameChecker;
+    const checkedItemDeletion = req.body.isChecked; // id of a selected item in todoList using checkbox
+    const listNameChecker = req.body.listNameChecker; // listTitle which will be used to match desired array from Lists collection
     
     try
     {
-    if(listNameChecker === day)
-    {
-        await Items.findByIdAndDelete(checkedItemDeletion);
-        console.log("Deleted an item with id: ",checkedItemDeletion);
-        res.redirect("/");
-    }
-    else
-    {
-       await List.findOneAndUpdate({name: listNameChecker},{$pull:{items:{_id:checkedItemDeletion}}});
-        // findOneAndUpdate({whatDoWeWantToUpdate},{HowAreWeGonnaUpdateIt})
-        // in second condition, we used $pull operator and we specified something that we want to pull from which is an items array
-        // then we provided query for matching the item, we used id for match so _id of array have to be the same with item that we selected in our app (checkedItemDeletion).
-        // The $pull oeprator removes an existing area with matched condition
-        res.redirect("/"+listNameChecker);
-    }
+        if(listNameChecker === day)
+        {
+             await Items.findByIdAndDelete(checkedItemDeletion);
+             console.log("Deleted an item with id: ",checkedItemDeletion);
+             res.redirect("/");
+        }
+        else
+        {
+            await List.findOneAndUpdate({name: listNameChecker},{$pull:{items:{_id:checkedItemDeletion}}});
+            // findOneAndUpdate({whatDoWeWantToUpdate},{HowAreWeGonnaUpdateIt})
+            // in second condition, we used $pull operator and we specified something that we want to pull from which is an items array
+            // then we provided query for matching the item, we used id for match so _id of array have to be the same with item that we selected in our app (checkedItemDeletion).
+            // The $pull oeprator removes an existing area with matched condition
+
+            console.log("Deleted an item with id: ", checkedItemDeletion);
+            res.redirect("/"+listNameChecker);
+        }
 
     }
     catch(err)
     {
         console.log(err);
     }
-    
 })
-
 
 app.get("/:parameter", async function(req,res)
 {
@@ -165,33 +154,35 @@ app.get("/:parameter", async function(req,res)
         const test = await List.findOne({name:paramName});
         if(!test)
         {
-            console.log("WTF ARE YOU LOOKING FOR");
-        const list = new List({
-        name: paramName,
-        items: defaultItems
-          })
-          await list.save();
-    
-        res.render("index", { listTitle: paramName, addItem: list.items });
-
+            console.log("There is no such List! I am creating a new one!");
+            const list = new List({
+                name: paramName,
+                items: defaultItems
+            })
+            await list.save();
+            res.render("index", { listTitle: paramName, addItem: list.items });
         }
         else
         {
-            console.log("HI THERE WE ARE");
+            console.log("Match Founded. List exists.");
             res.render("index", { listTitle: paramName, addItem: test.items });
-
         }
     }
     catch(err)
     {
         console.log(err);
     }
-        
-
 })
 
-
-app.listen(port, function(req,res)
+app.listen(process.env.PORT || port, function(req,res)
 {
-   console.log(`Server is running on port ${port}!`);
+    if(port === 2500)
+    {
+        console.log("Server is running on port "+ port);
+    }
+    else
+    {
+        console.log("Server is running on port "+ process.env.PORT);
+    }
+    
 });
